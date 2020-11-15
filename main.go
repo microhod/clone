@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 
@@ -27,7 +26,7 @@ func main() {
 	flag.Parse()
 	lang := *l
 	if len(flag.Args()) < 1 {
-		log.Println("please set the repository you want to clone")
+		println("please set the repository you want to clone")
 		os.Exit(1)
 	}
 
@@ -35,7 +34,7 @@ func main() {
 	if configPath := os.Getenv("CLONE_CONFIG"); configPath != "" {
 		config, err = parseConfig(configPath)
 		if err != nil {
-			log.Printf("error parsing config file '%s': %s", configPath, err)
+			fmt.Printf("error parsing config file '%s': %s", configPath, err)
 		}
 	}
 	if config == nil {
@@ -45,26 +44,26 @@ func main() {
 	rp := repo.NewParser(config.DefaultHost, config.DefaultProtocals)
 	repo, err := rp.Parse(flag.Args()[0])
 	if err != nil {
-		log.Println(err)
+		println(err)
 		os.Exit(1)
 	}
 
 	if lang == "" {
 		lang, err = repo.GetMainLanguage()
 		if err != nil {
-			log.Println(err)
+			println(err)
 		}
 	}
 
 	p := path.NewParser(config.PathTemplates)
 	path, err := p.Parse(repo, lang)
 	if err != nil {
-		log.Println(err)
+		println(err)
 		os.Exit(1)
 	}
 
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		log.Println(err)
+		println(err)
 		os.Exit(1)
 	}
 
