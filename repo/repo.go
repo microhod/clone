@@ -7,29 +7,30 @@ import (
 )
 
 const (
-	defaultProtocal = "https://"
+	defaultScheme = "https://"
 )
 
 // Repo describes a repository by host (e.g. github.com), owner (e.g. microhod) and repo (e.g. )
 type Repo struct {
-	URL      string
-	Protocal string
-	Host     string
-	Owner    string
-	Repo     string
+	URL    string
+	Scheme string
+	User   string
+	Host   string
+	Owner  string
+	Repo   string
 }
 
 // Parser holds config for parsing repos
 type Parser struct {
-	DefaultHost      string
-	DefaultProtocals map[string]string
+	DefaultHost    string
+	DefaultSchemes map[string]string
 }
 
-// NewParser creates a parser with the supplied default protocals
-func NewParser(defaultHost string, defaultProtocals map[string]string) *Parser {
+// NewParser creates a parser with the supplied default schemes
+func NewParser(defaultHost string, defaultSchemes map[string]string) *Parser {
 	return &Parser{
-		DefaultHost:      defaultHost,
-		DefaultProtocals: defaultProtocals,
+		DefaultHost:    defaultHost,
+		DefaultSchemes: defaultSchemes,
 	}
 }
 
@@ -43,14 +44,14 @@ func (p *Parser) Parse(repo string) (Repo, error) {
 	if r.Host == "" {
 		r.Host = p.DefaultHost
 	}
-	if r.Protocal == "" {
-		r.Protocal = p.DefaultProtocals[r.Host]
+	if r.Scheme == "" {
+		r.Scheme = p.DefaultSchemes[r.Host]
 	}
-	if r.Protocal == "" {
-		r.Protocal = p.DefaultProtocals["default"]
+	if r.Scheme == "" {
+		r.Scheme = p.DefaultSchemes["default"]
 	}
-	if r.Protocal == "" {
-		r.Protocal = defaultProtocal
+	if r.Scheme == "" {
+		r.Scheme = defaultScheme
 	}
 
 	r.updateURL()
@@ -60,7 +61,7 @@ func (p *Parser) Parse(repo string) (Repo, error) {
 func parse(repo string) Repo {
 	r := Repo{URL: repo}
 	if strings.HasPrefix(repo, "git@") {
-		r.Protocal = "git@"
+		r.Scheme = "git@"
 		repo = strings.Replace(repo, "git@", "", 1)
 		repo = strings.Replace(repo, ":", "/", 1)
 	} else {
@@ -68,7 +69,7 @@ func parse(repo string) Repo {
 		if len(parts) > 1 {
 			var re = regexp.MustCompile(`[^:\/\/]*:\/\/`)
 			repo = re.ReplaceAllString(repo, "")
-			r.Protocal = fmt.Sprintf("%s://", parts[0])
+			r.Scheme = fmt.Sprintf("%s://", parts[0])
 		}
 	}
 
@@ -96,9 +97,9 @@ func (r *Repo) GetMainLanguage() (string, error) {
 }
 
 func (r *Repo) updateURL() {
-	if r.Protocal == "git@" {
-		r.URL = fmt.Sprintf("%s%s:%s/%s", r.Protocal, r.Host, r.Owner, r.Repo)
+	if r.Scheme == "git@" {
+		r.URL = fmt.Sprintf("%s%s:%s/%s", r.Scheme, r.Host, r.Owner, r.Repo)
 	} else {
-		r.URL = fmt.Sprintf("%s%s/%s/%s", r.Protocal, r.Host, r.Owner, r.Repo)
+		r.URL = fmt.Sprintf("%s%s/%s/%s", r.Scheme, r.Host, r.Owner, r.Repo)
 	}
 }

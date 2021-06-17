@@ -14,9 +14,9 @@ import (
 
 // Config describes the configuration for this application
 type Config struct {
-	DefaultHost      string            `json:"defaultHost"`
-	PathTemplates    map[string]string `json:"pathTemplates"`
-	DefaultProtocals map[string]string `json:"defaultProtocals"`
+	DefaultHost    string            `json:"defaultHost"`
+	PathTemplates  map[string]string `json:"pathTemplates"`
+	DefaultSchemes map[string]string `json:"defaultSchemes"`
 }
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 		config = defaultConfig()
 	}
 
-	rp := repo.NewParser(config.DefaultHost, config.DefaultProtocals)
+	rp := repo.NewParser(config.DefaultHost, config.DefaultSchemes)
 	repo, err := rp.Parse(flag.Args()[0])
 	if err != nil {
 		println(err)
@@ -51,12 +51,16 @@ func main() {
 	if lang == "" {
 		lang, err = repo.GetMainLanguage()
 		if err != nil {
-			println(err)
+			println(err.Error())
 		}
 	}
 
-	p := path.NewParser(config.PathTemplates)
-	path, err := p.Parse(repo, lang)
+	p, err := path.NewPathParser(config.PathTemplates)
+	if err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+	path, err := p.Parse(lang, repo)
 	if err != nil {
 		println(err)
 		os.Exit(1)
@@ -101,10 +105,10 @@ func defaultConfig() *Config {
 	return &Config{
 		DefaultHost: "github.com",
 		PathTemplates: map[string]string{
-			"go":      "~/go/src/${host}/${owner}/${repo}",
-			"default": "~/src/${host}/${owner}/${repo}",
+			"go":      "~/go/src/{{.Host}}/{{.Owner}}/{{.Repo}}",
+			"default": "~/src/{{.Host}}/{{.Owner}}/{{.Repo}}",
 		},
-		DefaultProtocals: map[string]string{
+		DefaultSchemes: map[string]string{
 			"github.com": "git@",
 			"default":    "https://",
 		},

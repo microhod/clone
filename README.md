@@ -11,7 +11,7 @@ clone owner/repo ->
     cd ~/src/github.com/owner/repo
     git clone git@github.com:owner/repo .
 ```
-If no protocal is supplied, it will use the `defaultProtocals` from configuration, as described below
+If no scheme is supplied, it will use the `defaultSchemes` from configuration, as described below
 ```
 clone github.com/owner/repo -> 
     mkdir ~/src/github.com/owner/repo
@@ -46,10 +46,10 @@ Configuration is provided as a json file, with deafaults as below:
 {
     "defaultHost": "github.com",
     "pathTemplates": {
-        "go": "~/go/src/${host}/${owner}/${repo}",
-        "default": "~/src/${host}/${owner}/${repo}"
+        "go": "~/go/src/{{.Host}}/{{.Owner}}/{{.Repo}}",
+        "default": "~/src/{{.Host}}/{{.Owner}}/{{.Repo}}"
     },
-    "defaultProtocals": {
+    "defaultSchemes": {
         "github.com": "git@",
         "default": "https://"
     }
@@ -62,14 +62,11 @@ Path templates describe the path in which to clone repositories, based on langua
 
 The `default` template is used if no other language template is available.
 
-You can include parts of the repository in the template, which will be filled in at runtime:
-* `host`: the hostname of the git server e.g. `github.com`
-* `owner`: the project/orgnaisation/owner of the repository e.g. microhod is the owner of `github.com/microhod/clone`
-* `repo`: the base name of the repository e.g. clone is the repo for `github.com/microhod/clone`
+You can include any parts of the [Repo stuct](./repo/repo.go), which will be filled out at runtime (the templating uses [go text template](https://golang.org/pkg/text/template/) syntax)
 
 You can also prefix your paths with `~`, which will be expanded to the current users home directory.
 
-### Default Protocals
-As mentioned in the examples, default protocals to use for `git clone` can be set per host. 
+### Default Schemes
+As mentioned in the examples, default schemes to use for `git clone` can be set per host. 
 
 For instance in the default config, github repos default to the format `git@github.com:owner/repo`, whereas everything else defaults to `https`.
